@@ -160,7 +160,7 @@ MonoBehaviour:
     type: 2}
   ball: {fileID: 0}
   players: []
-  numPlayersPerTeam: 4
+  numPlayersPerTeam: 1
 --- !u!114 &773936589
 MonoBehaviour:
   m_ObjectHideFlags: 0

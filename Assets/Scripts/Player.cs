@@ -64,7 +64,14 @@ public class Player : MonoBehaviour {
         SetUpStatesWeights();
 
         // set initial random target
-        SetNewTarget(new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0f));
+        //SetNewTarget(new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0f));
+
+        SetNewTarget(Refs.FindFractionalPointBetween(gc.ball.transform.position, 
+                                                        new Vector3(
+                                                        gc.ball.transform.position.x,
+                                                        Refs.ARENA_HEIGHT/2,
+                                                        gc.ball.transform.position.z), 
+                                                        0.5f));
     }
 
     private void FixedUpdate()
@@ -76,7 +83,7 @@ public class Player : MonoBehaviour {
         }
         else if (cg.GetTeamWithBall() != this.team)
         {
-            SetNewTarget(gc.ball.transform.position);
+            //SetNewTarget(gc.ball.transform.position);
         }
     }
 
@@ -119,6 +126,7 @@ public class Player : MonoBehaviour {
         {
             this.transform.position = moveTar;
             // return true for arrived
+            Debug.Log("Arrived at : " + moveTar);
             return true;
         }
         return false;

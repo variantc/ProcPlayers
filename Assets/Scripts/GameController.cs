@@ -13,8 +13,9 @@ public class GameController : MonoBehaviour
     List<Player> teamB;
     
     [SerializeField]
-    int numPlayersPerTeam = 4;
-    
+    int numPlayersPerTeam = 1;
+
+
     private void Start()
     {
         ball = Instantiate(ballPrefab, new Vector3(0f, 0f, 0f), Quaternion.identity);
