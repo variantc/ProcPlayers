@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour {
-    GameController gc;
-    ConditionsOfGame cg;
+    GameController game;
+    ConditionsOfGame condition;
+    PlayerActions actions;
     public Material[] materials;
 
     // STATS:
@@ -52,8 +53,9 @@ public class Player : MonoBehaviour {
     
     private void Start()
     {
-        gc = FindObjectOfType<GameController>();
-        cg = FindObjectOfType<ConditionsOfGame>();
+        game = FindObjectOfType<GameController>();
+        condition = FindObjectOfType<ConditionsOfGame>();
+        actions = FindObjectOfType<PlayerActions>();
 
         AssignTeamColour();
 
@@ -66,22 +68,46 @@ public class Player : MonoBehaviour {
         // set initial random target
         //SetNewTarget(new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0f));
 
-        SetNewTarget(Refs.FindFractionalPointBetween(gc.ball.transform.position, 
+        SetNewTarget(Refs.FindFractionalPointBetween(game.ball.transform.position, 
                                                         new Vector3(
-                                                        gc.ball.transform.position.x,
+                                                        game.ball.transform.position.x,
                                                         Refs.ARENA_HEIGHT/2,
-                                                        gc.ball.transform.position.z), 
+                                                        game.ball.transform.position.z), 
                                                         0.5f));
     }
 
+    //private void FixedUpdate()
+    //{
+    //    if (hasTarget)
+    //    {
+    //        // moveTo returns true when arrives, otherwise false, therefore if arrives, hasTarget is false and vise-versa
+    //        hasTarget = !actions.MoveTo(this.gameObject, moveTarget, speed);
+    //    }
+    //    else if (condition.GetTeamWithBall() != this.team)
+    //    {
+    //        //SetNewTarget(gc.ball.transform.position);
+    //    }
+    //}
+
     private void FixedUpdate()
     {
+        Debug.Log(condition.GetBallHorizontalLocation());
+        // we want to check the game conditions each physics cycle
+        if (condition.GetBallHorizontalLocation() == "CentreThird" && condition.GetBallVerticalLocation() == "MiddleThird")
+        {
+            Debug.Log("blaf");
+            hasTarget = !actions.MoveTo(this.gameObject, moveTarget, speed);
+        }
+
+
+
+
         if (hasTarget)
         {
             // moveTo returns true when arrives, otherwise false, therefore if arrives, hasTarget is false and vise-versa
-            hasTarget = !MoveTo(moveTarget);
+            hasTarget = !actions.MoveTo(this.gameObject, moveTarget, speed);
         }
-        else if (cg.GetTeamWithBall() != this.team)
+        else if (condition.GetTeamWithBall() != this.team)
         {
             //SetNewTarget(gc.ball.transform.position);
         }
@@ -111,27 +137,7 @@ public class Player : MonoBehaviour {
         moveTarget = tar;
         hasTarget = true;
     }
-
-    // return true when arrive, otherwise false
-    bool MoveTo(Vector3 moveTar)
-    {
-        float moveBuffer = 0.1f;
-        Vector3 moveVector = moveTar - this.transform.position;
-
-        if (moveVector.magnitude > moveBuffer)
-        {
-            this.transform.position += moveVector.normalized * speed * Time.deltaTime;
-        }
-        else
-        {
-            this.transform.position = moveTar;
-            // return true for arrived
-            Debug.Log("Arrived at : " + moveTar);
-            return true;
-        }
-        return false;
-    }
-
+    
     void AssignTeamColour()
     {
         if (team == "A")
@@ -144,6 +150,8 @@ public class Player : MonoBehaviour {
     {
         FindClosest("enemy");
     }
+
+    // must be passed either "friend" or "enemy""
     Player FindClosest(string team)
     {
         Player closest = null;
@@ -178,6 +186,7 @@ public class Player : MonoBehaviour {
             Debug.LogError(team + " player not found");
         return closest;
     }
+
     void HelpClosestFriend()
     {
         FindClosest("friend");
