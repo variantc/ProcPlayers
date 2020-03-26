@@ -5,14 +5,18 @@ using UnityEngine;
 public class ConditionsOfGame : MonoBehaviour {
     
     List<string> TeamWithBallStrings = new List<string> { "None", "A", "B" };
-    List<string> BallVerticalLocationStrings = new List<string> { "BottomThird", "MiddleThird", "TopThird" };
-    List<string> BallHorizontalLocationStrings = new List<string> { "LeftThird", "CentreThird", "RightThird" };
+    List<string> BallVerticalLocationStrings = new List<string> { "Bottom", "Middle", "Top" };
+    List<string> BallHorizontalLocationStrings = new List<string> { "Left", "Centre", "Right" };
+    List<string> BallLocationStrings = new List<string> { "BottomLeft", "BottomCentre", "BottomRight",
+                                                            "MiddleLeft", "MiddleCentre", "MiddleRight",
+                                                            "TopLeft", "TopCentre", "TopRight" };
     List<string> BallRunnerStrings = new List<string> { "None", "A", "B" };
     List<string> BallMotionStrings = new List<string> { "Moving", "Stationary" };
 
     string teamWithBall = "None";
-    string ballVerticalLocation = "MiddleThird";
-    string ballHorizontalLocation = "CentreThird";
+    string ballVerticalLocation = "Middle";
+    string ballHorizontalLocation = "Centre";
+    string ballLocation = "MiddleCentre";
     string ballRunner = "None";
     string ballMotion = "Stationary";
    
@@ -28,6 +32,10 @@ public class ConditionsOfGame : MonoBehaviour {
     public string GetBallHorizontalLocation()
     {
         return ballHorizontalLocation;
+    }
+    public string GetBallLocation()
+    {
+        return ballLocation;
     }
     public string GetBallRunner()
     {
@@ -52,6 +60,8 @@ public class ConditionsOfGame : MonoBehaviour {
             ballVerticalLocation = str;
         else
             Debug.LogError("Invalid string entered to ConditionsOfGame.SetBallVerticalLocation");
+        
+        SetBallLocation(ballVerticalLocation + ballHorizontalLocation);
     }
     public void SetBallHorizontalLocation(string str)
     {
@@ -59,6 +69,15 @@ public class ConditionsOfGame : MonoBehaviour {
             ballHorizontalLocation = str;
         else
             Debug.LogError("Invalid string entered to ConditionsOfGame.SetBallHorizontalLocation");
+        
+        SetBallLocation(ballVerticalLocation + ballHorizontalLocation);
+    }
+    public void SetBallLocation(string str)
+    {
+        if (BallLocationStrings.Contains(str))
+            ballLocation = str;
+        else
+            Debug.LogError("Invalid string entered to ConditionsOfGame.SetBallLocation");
     }
     public void SetBallRunner(string str)
     {

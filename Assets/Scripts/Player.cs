@@ -74,33 +74,16 @@ public class Player : MonoBehaviour {
                                                         Refs.ARENA_HEIGHT/2,
                                                         game.ball.transform.position.z), 
                                                         0.5f));
+        Debug.Log(moveTarget);
     }
-
-    //private void FixedUpdate()
-    //{
-    //    if (hasTarget)
-    //    {
-    //        // moveTo returns true when arrives, otherwise false, therefore if arrives, hasTarget is false and vise-versa
-    //        hasTarget = !actions.MoveTo(this.gameObject, moveTarget, speed);
-    //    }
-    //    else if (condition.GetTeamWithBall() != this.team)
-    //    {
-    //        //SetNewTarget(gc.ball.transform.position);
-    //    }
-    //}
 
     private void FixedUpdate()
     {
-        Debug.Log(condition.GetBallHorizontalLocation());
         // we want to check the game conditions each physics cycle
-        if (condition.GetBallHorizontalLocation() == "CentreThird" && condition.GetBallVerticalLocation() == "MiddleThird")
+        if (condition.GetBallLocation() == "MiddleCentre")
         {
-            Debug.Log("blaf");
             hasTarget = !actions.MoveTo(this.gameObject, moveTarget, speed);
         }
-
-
-
 
         if (hasTarget)
         {

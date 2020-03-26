@@ -24,10 +24,8 @@ public class GameController : MonoBehaviour
 
         // Spawn players and assign them to teamA or teamB
         SpawnPlayers(numPlayersPerTeam);
-        Debug.Log(teamA.ToArray().Length);
-
+    
         players = FindObjectsOfType<Player>();
-        Debug.Log(players.Length);
 
     }
 
