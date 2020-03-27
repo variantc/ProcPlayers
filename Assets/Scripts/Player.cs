@@ -28,9 +28,9 @@ public class Player : MonoBehaviour {
     public List<Player> friends;
     public List<Player> enemies;
 
-    int numActions = 2;
-    [SerializeField]
+    int numActions = 9;
     List<int> actionChoiceList;
+    [SerializeField]
     int[] actionChoiceArray;
 
     [SerializeField]
@@ -62,9 +62,8 @@ public class Player : MonoBehaviour {
         condition = FindObjectOfType<ConditionsOfGame>();
         actions = FindObjectOfType<PlayerActions>();
         
-        actionChoiceList = new List<int>();
+        //actionChoiceList = new List<int>();
         SetUpChoiceArray();
-
         
         AssignTeamColour();
 
@@ -77,86 +76,156 @@ public class Player : MonoBehaviour {
         // set initial random target
         //SetNewTarget(new Vector3(Random.Range(-5f, 5f), Random.Range(-5f, 5f), 0f));
 
-        SetNewTarget(Refs.FindFractionalPointBetween(game.ball.transform.position, 
-                                                        new Vector3(
-                                                        game.ball.transform.position.x,
-                                                        Refs.ARENA_HEIGHT/2,
-                                                        game.ball.transform.position.z), 
-                                                        0.5f));
     }
 
     private void FixedUpdate()
     {
         int currentAction = -1;
 
-        // we want to check the game conditions each physics cycle
+        // we want to check the game conditions each physics cycle?
+
+        // ---------------------------------------------------------------------------------------
+        // NOBODY HAS BALL
+        // ---------------------------------------------------------------------------------------
+        if (condition.GetTeamWithBall() == "None")
+        {
+            currentAction = LocationConditions(0, 1, 2);
+        }
+
+        // ---------------------------------------------------------------------------------------
+        // PLAYER'S TEAM HAS BALL
+        // ---------------------------------------------------------------------------------------
+        if (condition.GetTeamWithBall() == team)
+        {
+            currentAction = LocationConditions(3, 4, 5);
+        }
+
+        // ---------------------------------------------------------------------------------------
+        // ENEMY TEAM HAS BALL
+        // ---------------------------------------------------------------------------------------
+        else
+        {
+            currentAction = LocationConditions(6, 7, 8);
+        }
+        
+        Debug.Log(this.transform.name + ": " + currentAction);
+
+        switch (currentAction)
+        {
+            case 0:
+                // move between ball and top goal line
+                SetNewTarget(Refs.FindFractionalPointBetween(game.ball.transform.position,
+                                                                new Vector3(
+                                                                game.ball.transform.position.x,
+                                                                Refs.ARENA_HEIGHT / 2,
+                                                                game.ball.transform.position.z),
+                                                                traitWeights[0]));
+                hasTarget = !actions.MoveTo(this, moveTarget, speed);
+                break;
+            case 1:
+                // move between ball and bottom goal line
+                SetNewTarget(Refs.FindFractionalPointBetween(game.ball.transform.position,
+                                                                new Vector3(
+                                                                game.ball.transform.position.x,
+                                                                -Refs.ARENA_HEIGHT / 2,
+                                                                game.ball.transform.position.z),
+                                                                traitWeights[1]));
+                hasTarget = !actions.MoveTo(this, moveTarget, speed);
+                break;
+            case 2:
+                // move to ball
+                hasTarget = !actions.MoveTo(this, game.ball.transform.position, speed);
+                break;
+            case 3:
+                actions.ThrowBall(game.ball, moveTarget);
+                break;
+            case 4:
+                // move between ball and right line
+                SetNewTarget(Refs.FindFractionalPointBetween(game.ball.transform.position,
+                                                                new Vector3(
+                                                                Refs.ARENA_WIDTH / 2,
+                                                                game.ball.transform.position.y,
+                                                                game.ball.transform.position.z),
+                                                                traitWeights[2]));
+                hasTarget = !actions.MoveTo(this, moveTarget, speed);
+                break;
+            case 5:
+                // move between ball and left line
+                SetNewTarget(Refs.FindFractionalPointBetween(game.ball.transform.position,
+                                                                new Vector3(
+                                                                -Refs.ARENA_WIDTH / 2,
+                                                                game.ball.transform.position.y,
+                                                                game.ball.transform.position.z),
+                                                                traitWeights[3]));
+                hasTarget = !actions.MoveTo(this, moveTarget, speed);
+                break;
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                break;
+            default:
+                Debug.LogError("Player: current action switch made it to default - is current action not set");
+                break;
+        }
+    }
+
+    int LocationConditions(int a, int b, int c)
+    {
+        int choice = -1;
         switch (condition.GetBallLocation())
         {
             case "BottomLeft":
             case "BottomCentre":
             case "BottomRight":
+                choice = actionChoiceArray[a];
+                break;
             case "MiddleLeft":
             case "MiddleCentre":
-                currentAction = actionChoiceArray[0];
-                break;
             case "MiddleRight":
+                choice = actionChoiceArray[b];
+                break;
             case "TopLeft":
             case "TopCentre":
             case "TopRight":
-                currentAction = actionChoiceArray[1];
+                choice = actionChoiceArray[c];
                 break;
             default:
                 Debug.LogError("Player: ball location switch made it to default");
                 break;
         }
 
-        Debug.Log(this.transform.name + ": " + currentAction);
-
-        switch (currentAction)
-        {
-            case 0:
-                hasTarget = !actions.MoveTo(this, moveTarget, speed);
-                break;
-            case 1:
-                actions.ThrowBall(game.ball, moveTarget);
-                break;
-            default:
-                Debug.LogError("Player: current action switch made it to default - is current action not set");
-                break;
-
-        }
-
-        //if (hasTarget)
-        //{
-        //    // moveTo returns true when arrives, otherwise false, therefore if arrives, hasTarget is false and vise-versa
-        //    hasTarget = !actions.MoveTo(this, moveTarget, speed);
-        //}
-        //else if (condition.GetTeamWithBall() != this.team)
-        //{
-        //    //SetNewTarget(gc.ball.transform.position);
-        //}
+        return choice;
     }
 
     void SetUpChoiceArray()
     {
-        // initialise list with ordered numbers
-        int n = numActions;
-        for (int i = 0; i < numActions; i++)
-        {
-            actionChoiceList.Add(i);
-        }
-        
-        // shuffle list order
-        while (n > 1)
-        {
-            n--;
-            int k = Random.Range(0, n + 1);
-            int temp = actionChoiceList[k];
-            actionChoiceList[k] = actionChoiceList[n];
-            actionChoiceList[n] = temp;
-        }
+        /// FOR RANDOM NON-REPEATING NUMBERS:
 
-        actionChoiceArray = actionChoiceList.ToArray();
+        //// initialise list with ordered numbers
+        //int n = numActions;
+        //for (int i = 0; i < numActions; i++)
+        //{
+        //    actionChoiceList.Add(i);
+        //}
+
+        //// shuffle list order
+        //while (n > 1)
+        //{
+        //    n--;
+        //    int k = Random.Range(0, n + 1);
+        //    int temp = actionChoiceList[k];
+        //    actionChoiceList[k] = actionChoiceList[n];
+        //    actionChoiceList[n] = temp;
+        //}
+
+        //actionChoiceArray = actionChoiceList.ToArray();
+
+        actionChoiceArray = new int[numActions];
+        for (int i = 0; i < actionChoiceArray.Length; i++)
+        {
+            actionChoiceArray[i] = Random.Range(0, numActions);
+        }
     }
 
     void SetUpStats()
@@ -183,7 +252,6 @@ public class Player : MonoBehaviour {
         moveTarget = tar;
         hasTarget = true;
     }
-    
     void AssignTeamColour()
     {
         if (team == "A")
@@ -191,6 +259,5 @@ public class Player : MonoBehaviour {
         else if (team == "B")
             GetComponentInChildren<SpriteRenderer>().material = materials[1];
     }
-
     
 }
