@@ -28,6 +28,11 @@ public class Player : MonoBehaviour {
     public List<Player> friends;
     public List<Player> enemies;
 
+    int numActions = 2;
+    [SerializeField]
+    List<int> actionChoiceList;
+    int[] actionChoiceArray;
+
     [SerializeField]
     string team;
     public string Team
@@ -56,7 +61,11 @@ public class Player : MonoBehaviour {
         game = FindObjectOfType<GameController>();
         condition = FindObjectOfType<ConditionsOfGame>();
         actions = FindObjectOfType<PlayerActions>();
+        
+        actionChoiceList = new List<int>();
+        SetUpChoiceArray();
 
+        
         AssignTeamColour();
 
         numTraits = System.Enum.GetNames(typeof(Refs.BehavState)).Length;
@@ -74,26 +83,80 @@ public class Player : MonoBehaviour {
                                                         Refs.ARENA_HEIGHT/2,
                                                         game.ball.transform.position.z), 
                                                         0.5f));
-        Debug.Log(moveTarget);
     }
 
     private void FixedUpdate()
     {
+        int currentAction = -1;
+
         // we want to check the game conditions each physics cycle
-        if (condition.GetBallLocation() == "MiddleCentre")
+        switch (condition.GetBallLocation())
         {
-            hasTarget = !actions.MoveTo(this.gameObject, moveTarget, speed);
+            case "BottomLeft":
+            case "BottomCentre":
+            case "BottomRight":
+            case "MiddleLeft":
+            case "MiddleCentre":
+                currentAction = actionChoiceArray[0];
+                break;
+            case "MiddleRight":
+            case "TopLeft":
+            case "TopCentre":
+            case "TopRight":
+                currentAction = actionChoiceArray[1];
+                break;
+            default:
+                Debug.LogError("Player: ball location switch made it to default");
+                break;
         }
 
-        if (hasTarget)
+        Debug.Log(this.transform.name + ": " + currentAction);
+
+        switch (currentAction)
         {
-            // moveTo returns true when arrives, otherwise false, therefore if arrives, hasTarget is false and vise-versa
-            hasTarget = !actions.MoveTo(this.gameObject, moveTarget, speed);
+            case 0:
+                hasTarget = !actions.MoveTo(this, moveTarget, speed);
+                break;
+            case 1:
+                actions.ThrowBall(game.ball, moveTarget);
+                break;
+            default:
+                Debug.LogError("Player: current action switch made it to default - is current action not set");
+                break;
+
         }
-        else if (condition.GetTeamWithBall() != this.team)
+
+        //if (hasTarget)
+        //{
+        //    // moveTo returns true when arrives, otherwise false, therefore if arrives, hasTarget is false and vise-versa
+        //    hasTarget = !actions.MoveTo(this, moveTarget, speed);
+        //}
+        //else if (condition.GetTeamWithBall() != this.team)
+        //{
+        //    //SetNewTarget(gc.ball.transform.position);
+        //}
+    }
+
+    void SetUpChoiceArray()
+    {
+        // initialise list with ordered numbers
+        int n = numActions;
+        for (int i = 0; i < numActions; i++)
         {
-            //SetNewTarget(gc.ball.transform.position);
+            actionChoiceList.Add(i);
         }
+        
+        // shuffle list order
+        while (n > 1)
+        {
+            n--;
+            int k = Random.Range(0, n + 1);
+            int temp = actionChoiceList[k];
+            actionChoiceList[k] = actionChoiceList[n];
+            actionChoiceList[n] = temp;
+        }
+
+        actionChoiceArray = actionChoiceList.ToArray();
     }
 
     void SetUpStats()
@@ -129,67 +192,5 @@ public class Player : MonoBehaviour {
             GetComponentInChildren<SpriteRenderer>().material = materials[1];
     }
 
-    void AttackClosestEnemy()
-    {
-        FindClosest("enemy");
-    }
-
-    // must be passed either "friend" or "enemy""
-    Player FindClosest(string team)
-    {
-        Player closest = null;
-        float dist = float.PositiveInfinity;
-        if (team == "friend")
-        {
-            foreach (Player p in friends)
-            {
-                float currDist = (p.transform.position - this.transform.position).magnitude;
-                if (currDist < dist)
-                {
-                    dist = currDist;
-                    closest = p;
-                }
-            }
-        } else if (team == "enemy")
-        {
-            foreach (Player p in friends)
-            {
-                float currDist = (p.transform.position - this.transform.position).magnitude;
-                if (currDist < dist)
-                {
-                    dist = currDist;
-                    closest = p;
-                }
-            }
-        } else
-        {
-            Debug.LogError("FindClosest must be passed either \"friend\" or \"enemy\"");
-        }
-        if (closest == null)
-            Debug.LogError(team + " player not found");
-        return closest;
-    }
-
-    void HelpClosestFriend()
-    {
-        FindClosest("friend");
-    }
-    void FindBall()
-    {
-    }
-    void MoveToEnemyGoalLine()
-    {
-    }
-    void MoveToFriendlyGoalLine()
-    {
-    }
-    void PassBall()
-    {
-    }
-    void RunWithBall()
-    {
-    }
-    void DropBall()
-    {
-    }
+    
 }
